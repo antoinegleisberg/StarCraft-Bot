@@ -3,36 +3,33 @@
 StarterBot::StarterBot()
 {
     pBT = new BT_DECORATOR("EntryPoint", nullptr);
-
-        
+    
+    // Root node
     BT_PARALLEL_SEQUENCER* pParallelSeq = new BT_PARALLEL_SEQUENCER("MainParallelSequence", pBT, 15);
 
-    //Farming Minerals forever
-    BT_DECO_REPEATER* pFarmingMineralsForeverRepeater = new BT_DECO_REPEATER("RepeatForeverFarmingMinerals", pParallelSeq, 0, true, false, false);
-    BT_DECO_CONDITION_NOT_ENOUGH_WORKERS_FARMING_MINERALS* pNotEnoughWorkersFarmingMinerals = new BT_DECO_CONDITION_NOT_ENOUGH_WORKERS_FARMING_MINERALS("NotEnoughWorkersFarmingMinerals", pFarmingMineralsForeverRepeater);
-    BT_ACTION_SEND_IDLE_WORKER_TO_MINERALS* pSendWorkerToMinerals = new BT_ACTION_SEND_IDLE_WORKER_TO_MINERALS("SendWorkerToMinerals", pNotEnoughWorkersFarmingMinerals);
+	// Send idle workers to collect resources
+	BT_DECO_REPEATER* pSendWorkersToCollectResourcesRepeater = new BT_DECO_REPEATER("RepeatForeverSendWorkersToCollectResources", pParallelSeq, 0, true, false, false);
+	BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES* pSendWorkersToCollectResourcesAction = new BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES("SendWorkersToCollectResources", pSendWorkersToCollectResourcesRepeater);
 
+    // Form the attack strategy
+	BT_PARALLEL_SEQUENCER* pParallelSeqAttackStrategy = new BT_PARALLEL_SEQUENCER("AttackStrategy", pParallelSeq, 15);
 
-    //Farming Vespene forever
-	BT_DECO_REPEATER* pFarmingVespeneForeverRepeater = new BT_DECO_REPEATER("RepeatForeverFarmingVespene", pParallelSeq, 0, true, false, false);
-	BT_DECO_CONDITION_NOT_ENOUGH_WORKERS_FARMING_VESPENE* pNotEnoughWorkersFarmingVespene = new BT_DECO_CONDITION_NOT_ENOUGH_WORKERS_FARMING_VESPENE("NotEnoughWorkersFarmingVespene", pFarmingVespeneForeverRepeater);
-	BT_ACTION_SEND_IDLE_WORKER_TO_VESPENE* pSendWorkerToVespene = new BT_ACTION_SEND_IDLE_WORKER_TO_VESPENE("SendWorkerToVespene", pNotEnoughWorkersFarmingVespene);
+    // Phase 1: Make a 4-Pool attack
+    BT_SEQUENCER* p4PoolAttackSeq = new BT_SEQUENCER("4PoolAttackSequence", pParallelSeqAttackStrategy, 15);
     
+    // Step 1: Make a spawn pool
+	BT_DECO_UNTIL_SUCCESS* pBuildSpawnPoolUntilSuccess = new BT_DECO_UNTIL_SUCCESS("RepeatForeverBuildSpawnPool", p4PoolAttackSeq);
+	BT_ACTION_BUILD_SPAWN_POOL* pBuildSpawnPool = new BT_ACTION_BUILD_SPAWN_POOL("BuildSpawnPool", pBuildSpawnPoolUntilSuccess);
+    
+    // Step 2: Build units
+	BT_DECO_UNTIL_SUCCESS* pBuild4PoolArmyDecorator = new BT_DECO_UNTIL_SUCCESS("4PoolArmyCreationDecorator", p4PoolAttackSeq);
+	BT_ACTION_BUILD_4POOL_ARMY* pBuild4PoolArmy = new BT_ACTION_BUILD_4POOL_ARMY("Build4PoolArmy", pBuild4PoolArmyDecorator);
 
+    /*
     //Training Workers
     BT_DECO_REPEATER* pTrainingWorkersForeverRepeater = new BT_DECO_REPEATER("RepeatForeverTrainingWorkers", pParallelSeq, 0, true, false, false);
     BT_DECO_CONDITION_NOT_ENOUGH_WORKERS* pNotEnoughWorkers = new BT_DECO_CONDITION_NOT_ENOUGH_WORKERS("NotEnoughWorkers", pTrainingWorkersForeverRepeater);
     BT_ACTION_TRAIN_WORKER* pTrainWorker = new BT_ACTION_TRAIN_WORKER("TrainWorker", pNotEnoughWorkers);
-
-    //Build Additional Supply Provider
-    BT_DECO_REPEATER* pBuildSupplyProviderForeverRepeater = new BT_DECO_REPEATER("RepeatForeverBuildSupplyProvider", pParallelSeq, 0, true, false, false);
-    BT_DECO_CONDITION_NOT_ENOUGH_SUPPLY* pNotEnoughSupply = new BT_DECO_CONDITION_NOT_ENOUGH_SUPPLY("NotEnoughSupply", pBuildSupplyProviderForeverRepeater);
-    BT_ACTION_BUILD_SUPPLY_PROVIDER* pBuildSupplyProvider = new BT_ACTION_BUILD_SUPPLY_PROVIDER("BuildSupplyProvider", pNotEnoughSupply);
-
-    // Build Spawning Pool
-	BT_DECO_UNTIL_SUCCESS* pBuildSpawnPoolUntilSuccess = new BT_DECO_UNTIL_SUCCESS("RepeatForeverBuildSpawnPool", pParallelSeq);
-	BT_DECO_CONDITION_BUILD_SPAWN_POOL* pBuildSpawnPoolCondition = new BT_DECO_CONDITION_BUILD_SPAWN_POOL("BuildSpawnPool", pBuildSpawnPoolUntilSuccess);
-	BT_ACTION_BUILD_SPAWN_POOL* pBuildSpawnPool = new BT_ACTION_BUILD_SPAWN_POOL("BuildSpawnPool", pBuildSpawnPoolCondition);
 
     // Build Hatchery
     BT_DECO_UNTIL_SUCCESS* pBuildHatcheryUntilSuccess = new BT_DECO_UNTIL_SUCCESS("RepeatForeverBuildHatchery", pParallelSeq);
@@ -44,14 +41,12 @@ StarterBot::StarterBot()
     BT_DECO_CONDITION_BUILD_REFINERY* pBuildRefineryCondition = new BT_DECO_CONDITION_BUILD_REFINERY("BuildRefinery", pBuildRefineryUntilSuccess);
     BT_ACTION_BUILD_REFINERY* pBuildRefinery = new BT_ACTION_BUILD_REFINERY("BuildRefinery", pBuildRefineryCondition);
 
-    
     // Morph To Overlords
 	BT_DECO_REPEATER* pMorphOverlordsForeverRepeater = new BT_DECO_REPEATER("RepeatForeverMorphOverlords", pParallelSeq, 0, true, false, false);
     BT_DECO_CONDITION_MORPH_OVERLORDS* pMorphOverlordsCondition = new BT_DECO_CONDITION_MORPH_OVERLORDS("MorphOverlords", pMorphOverlordsForeverRepeater);
 	BT_ACTION_MORPH_OVERLORDS* pMorphOverlords = new BT_ACTION_MORPH_OVERLORDS("MorphOverlords", pMorphOverlordsCondition);
 
     // Morph To Zerglings
-    
     BT_DECO_REPEATER* pMorphZerglingsForeverRepeater = new BT_DECO_REPEATER("RepeatForeverMorphZerglings", pParallelSeq, 0, true, false, false);
     BT_DECO_CONDITION_MORPH_ZERGLINGS* pMorphZerglingsCondition = new BT_DECO_CONDITION_MORPH_ZERGLINGS("MorphZerglings", pMorphZerglingsForeverRepeater);
     BT_ACTION_MORPH_ZERGLINGS* pMorphZerglings = new BT_ACTION_MORPH_ZERGLINGS("MorphZerglings", pMorphZerglingsCondition);
@@ -95,7 +90,7 @@ StarterBot::StarterBot()
 
 
 
-    
+    */
     
     
     pData = new Data();
@@ -105,7 +100,7 @@ StarterBot::StarterBot()
     pData->thresholdSupply = THRESHOLD1_UNUSED_SUPPLY;
     pData->nMorphingLarvaOverlords = 0;
 	pData->nZerglingBase = 0;
-    
+
     pData->nWantedWorkersTotal = NWANTED_WORKERS_TOTAL;
     pData->nWantedWorkersFarmingMinerals = NWANTED_WORKERS_FARMING_MINERALS;
 	pData->nWantedWorkersFarmingVespene = NWANTED_WORKERS_FARMING_VESPENE;
@@ -251,7 +246,7 @@ void StarterBot::buildAdditionalSupply()
 // Draw some relevent information to the screen to help us debug the bot
 void StarterBot::drawDebugInformation()
 {
-    BWAPI::Broodwar->drawTextScreen(BWAPI::Position(10, 10), "Hello, Dune!\n");
+    // BWAPI::Broodwar->drawTextScreen(BWAPI::Position(10, 10), "Hello, Dune!\n");
     Tools::DrawUnitCommands();
     Tools::DrawUnitBoundingBoxes();
 }

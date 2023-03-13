@@ -20,6 +20,12 @@ BT_NODE::State BT_ACTION_BUILD_SPAWN_POOL::BuildSpawningPool(void* data)
 {
     Data* pData = (Data*)data;
 
+    bool const hasMinerals = BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice();
+    bool const hasSpawningPool = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Spawning_Pool) != nullptr;
+    
+	if (!hasMinerals || hasSpawningPool)
+        return BT_NODE::FAILURE;
+    
 	BWAPI::Broodwar->printf("Build Spawning Pool");
 
     // let's build a supply provider

@@ -23,6 +23,8 @@ BT_NODE::State BT_ACTION_BUILD_SUPPLY_PROVIDER::BuildSupplyProvider(void* data)
     // let's build a supply provider
     const BWAPI::UnitType supplyProviderType = BWAPI::Broodwar->self()->getRace().getSupplyProvider();
 
+	BWAPI::Broodwar->printf("Trying to build %s", supplyProviderType.getName().c_str());
+
     const bool startedBuilding = Tools::BuildBuilding(supplyProviderType);
 
     if (startedBuilding)

@@ -17,12 +17,11 @@ bool BT_DECO_CONDITION_BUILD_HATCHERY::DoWeBuildHatchery(void* data)
     Data* pData = (Data*)data;
 
     // Get the amount of supply supply we currently have unused
-    bool haveMaxWorkers = BWAPI::Broodwar->self()->supplyUsed() >= 1;
-	bool hasHatchery = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Hatchery) < 2;
+	bool notEnoughHatcheries = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Hatchery) < 2;
     bool hasMinerals = BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice();
 	bool needHatchery = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Overlord) >= 2;
 
     // If we have a sufficient amount of supply, we don't need to do anything
 
-    return haveMaxWorkers && hasHatchery && hasMinerals && needHatchery;
+    return notEnoughHatcheries && hasMinerals && needHatchery;
 }

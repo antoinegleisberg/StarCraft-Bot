@@ -33,9 +33,9 @@ BT_NODE::State BT_ACTION_SEND_ONE_ZERGLING_TO_ATTACK::SendZergling(void* data)
             BWAPI::TilePosition enemyLocation1 = BWAPI::Broodwar->getStartLocations()[0];
             BWAPI::TilePosition enemyLocation2 = BWAPI::Broodwar->getStartLocations()[1];
 
-            std::cout << "ennemy : " << BWAPI::Broodwar->enemy() << std::endl;
-            std::cout << "ennemy location: " << enemyLocation1.x << " " << enemyLocation1.y << std::endl;
-            std::cout << "ennemy location: " << enemyLocation2.x << " " << enemyLocation2.y << std::endl;
+            // std::cout << "ennemy : " << BWAPI::Broodwar->enemy() << std::endl;
+            // std::cout << "ennemy location: " << enemyLocation1.x << " " << enemyLocation1.y << std::endl;
+            // std::cout << "ennemy location: " << enemyLocation2.x << " " << enemyLocation2.y << std::endl;
 
             BWAPI::TilePosition enemyLocation = enemyLocation1;
 
