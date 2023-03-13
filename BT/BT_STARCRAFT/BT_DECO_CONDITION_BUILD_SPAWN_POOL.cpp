@@ -17,10 +17,11 @@ bool BT_DECO_CONDITION_BUILD_SPAWN_POOL::DoWeBuildSpawningPool(void* data)
     Data* pData = (Data*)data;
 
     // Get the amount of supply supply we currently have unused
-    bool haveMaxWorkers = BWAPI::Broodwar->self()->supplyUsed() >= BWAPI::Broodwar->self()->supplyTotal();
+    bool haveMaxWorkers = BWAPI::Broodwar->self()->supplyUsed() >= BWAPI::Broodwar->self()->supplyTotal() - 2;
 	bool hasSpawningPool = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Spawning_Pool) != nullptr;
     bool hasMinerals = BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice();
 
     // If we have a sufficient amount of supply, we don't need to do anything
+    
     return haveMaxWorkers && !hasSpawningPool && hasMinerals;
 }

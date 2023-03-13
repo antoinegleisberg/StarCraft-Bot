@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MapTools.h"
+#include "Tools.h"
 #include "BT.h"
 #include <BWAPI.h>
 #include "Data.h"
@@ -18,6 +19,7 @@ public:
 
     // helper functions to get you started with bot programming and learn the API
     void sendIdleWorkersToMinerals();
+	void sendIdleZerglingsToAttack();
     void trainAdditionalWorkers();
     void buildAdditionalSupply();
     void drawDebugInformation();
