@@ -6,12 +6,12 @@
 // return success then the child task is not run and a failure status is immediately returned.
 // 
 //--------------------
-class BT_DECO_CONDITION_BEGIN_ATTACK : public BT_DECO_CONDITION {
+class BT_DECO_CONDITION_BUILD_HYDRALISK_DEN : public BT_DECO_CONDITION {
 public:
-    BT_DECO_CONDITION_BEGIN_ATTACK(std::string name, BT_NODE* parent);
+    BT_DECO_CONDITION_BUILD_HYDRALISK_DEN(std::string name, BT_NODE* parent);
     std::string GetDescription() override;
 
-    static bool DoWeBeginAttack(void* data);
+    static bool DoWeBuildHydraliskDen(void* data);
 
 };
 //----------

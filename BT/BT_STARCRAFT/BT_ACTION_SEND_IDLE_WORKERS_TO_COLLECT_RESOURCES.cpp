@@ -36,6 +36,22 @@ BT_NODE::State BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES::SendWorkersToCo
 {
     Data* pData = (Data*)data;
 
+	// Clear the sets
+	pData->unitsFarmingMinerals.clear();
+	pData->unitsFarmingVespene.clear();
+	for (auto& unit : BWAPI::Broodwar->self()->getUnits())
+	{
+		if (unit->getType().isWorker())
+		{
+            if (unit->isGatheringMinerals()) {
+				pData->unitsFarmingMinerals.insert(unit);
+            }
+			else if (unit->isGatheringGas()) {
+				pData->unitsFarmingVespene.insert(unit);
+			}
+		}
+	}
+
     bool farm_minerals = BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES::WantMoreMinerals(data);
 	bool farm_gas = BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES::WantMoreGas(data);
 
@@ -51,19 +67,21 @@ BT_NODE::State BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES::SendWorkersToCo
             if (!farm_gas && !farm_minerals) {
 				// no specific needs, just send it to the closest mineral
                 closestResource = Tools::GetClosestUnitTo(unit, BWAPI::Broodwar->getMinerals());
+				pData->unitsFarmingMinerals.insert(unit);
             }
             else if (farm_minerals) {
                 closestResource = Tools::GetClosestUnitTo(unit, BWAPI::Broodwar->getMinerals());
+				pData->unitsFarmingMinerals.insert(unit);
             }
             else if (farm_gas) {
 				const BWAPI::UnitType Extractor = BWAPI::UnitTypes::Zerg_Extractor;
 				closestResource = Tools::GetUnitOfType(Extractor);
+				pData->unitsFarmingVespene.insert(unit);
             }
 
             // If a valid resource was found, right click it with the unit in order to start harvesting
             if (closestResource) {
                 unit->rightClick(closestResource);
-                pData->unitsFarmingMinerals.insert(unit);
                 success = true;
                 farm_minerals = BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES::WantMoreMinerals(data);
                 farm_gas = BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES::WantMoreGas(data);

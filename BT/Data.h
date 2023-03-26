@@ -29,9 +29,29 @@ public:
 
 	int nZerglingBase;
 
+	bool finishedPhase1;
 	bool startedPhase2;
 	int additionalZerglingsTrained;
 	int nDeadZerglings;
+
+	// Management des escouades
+	std::vector< BWAPI::Unitset > squads;
+	std::vector< std::string> squadStatus;
+	std::vector< int> squadCapacity;
+
+	//Management des Troupes d'attaques 
+	std::unordered_set<BWAPI::Unit> Troops;
+	std::unordered_set<BWAPI::Unit> TroopsPhase1;
+	std::vector<BWAPI::UnitType> TypesOfTroops;
+
+	std::vector<BWAPI::UnitType> BestAvailableUnitTypes;
+
+	// Management de stratégie
+	bool ennemyLocFound;
+	int  nbzergPhase1Stored;
+	BWAPI::TilePosition ennemyLoc;
+	int DeceasedUnits;
+	bool message;
 
 	std::unordered_set<BWAPI::Unit> unitsFarmingMinerals;
 	std::unordered_set<BWAPI::Unit> unitsFarmingVespene;

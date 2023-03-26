@@ -19,5 +19,7 @@ bool BT_DECO_CONDITION_MORPH_OVERLORDS::DoWeMorphOverlords(void* data)
     // If we do not have enough supply left, morph an overlord
     bool needOverlords = (BWAPI::Broodwar->self()->supplyUsed() + 8 > BWAPI::Broodwar->self()->supplyTotal());
 
+	BWAPI::Broodwar->drawTextScreen(10, 20, "Need overlords: %d", needOverlords);
+
     return needOverlords;
 }

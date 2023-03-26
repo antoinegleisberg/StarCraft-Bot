@@ -19,9 +19,6 @@ std::string BT_ACTION_MORPH_OVERLORDS::GetDescription()
 BT_NODE::State BT_ACTION_MORPH_OVERLORDS::MorphToOverlords(void* data)
 {
 	Data* pData = (Data*)data;
-
-	
-	printf("morphing to overlord");
 	
 	{
 		BWAPI::Unit larva = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Larva);

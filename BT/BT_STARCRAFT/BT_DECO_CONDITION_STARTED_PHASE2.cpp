@@ -14,8 +14,9 @@ std::string BT_DECO_CONDITION_STARTED_PHASE2::GetDescription()
 
 bool BT_DECO_CONDITION_STARTED_PHASE2::StartedPhase2(void *data)
 {
-    const Data* pData = (const Data*)data;
+    Data* pData = (Data*)data;
 
-    return pData->startedPhase2;
+    bool startPhase2 = pData->startedPhase2;
 
+    return startPhase2;
 }
