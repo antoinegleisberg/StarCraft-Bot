@@ -18,7 +18,13 @@ std::string BT_ACTION_BUILD_4POOL_ARMY::GetDescription()
 
 BT_NODE::State BT_ACTION_BUILD_4POOL_ARMY::Build4PoolArmy(void* data)
 {
-    const Data* pData = (const Data*)data;
+    // If we are done building the 4-Pool, move on to the attack
+    if (BWAPI::Broodwar->self()->supplyTotal() == BWAPI::Broodwar->self()->supplyUsed()) {
+        BWAPI::Broodwar->printf("Done building troops for 4-Pool");
+        return BT_NODE::SUCCESS;
+    }
+
+    Data* pData = (Data*)data;
 
     const BWAPI::UnitType workerType = BWAPI::Broodwar->self()->getRace().getWorker();
 	const BWAPI::UnitType zerglingType = BWAPI::UnitTypes::Zerg_Zergling;
@@ -54,11 +60,7 @@ BT_NODE::State BT_ACTION_BUILD_4POOL_ARMY::Build4PoolArmy(void* data)
         const BWAPI::Error error = BWAPI::Broodwar->getLastError();
         if (error != BWAPI::Errors::None)
             return BT_NODE::FAILURE;
-    }
-    // stop if supply is full
-    if (BWAPI::Broodwar->self()->supplyTotal() == BWAPI::Broodwar->self()->supplyUsed()) {
-        return BT_NODE::SUCCESS;
-    }
-
+    }    
+    
     return BT_NODE::RUNNING;
 }

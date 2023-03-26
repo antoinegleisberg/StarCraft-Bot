@@ -16,12 +16,14 @@ bool BT_DECO_CONDITION_BUILD_HATCHERY::DoWeBuildHatchery(void* data)
 {
     Data* pData = (Data*)data;
 
+    const float wantedOverlordHatcheryRatio = 0.3f;
+	const float currentOverlordHatcheryRatio = (float)Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Hatchery) / (float)Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Overlord);
+	const bool wantMoreHatcheries = currentOverlordHatcheryRatio < wantedOverlordHatcheryRatio;
+    
     // Get the amount of supply supply we currently have unused
-	bool notEnoughHatcheries = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Hatchery) < 2;
     bool hasMinerals = BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice();
-	bool needHatchery = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Overlord) >= 2;
 
     // If we have a sufficient amount of supply, we don't need to do anything
 
-    return notEnoughHatcheries && hasMinerals && needHatchery;
+    return wantMoreHatcheries && hasMinerals;
 }

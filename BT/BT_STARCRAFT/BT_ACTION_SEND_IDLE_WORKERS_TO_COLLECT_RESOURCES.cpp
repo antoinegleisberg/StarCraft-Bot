@@ -18,13 +18,18 @@ std::string BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES::GetDescription()
 
 bool BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES::WantMoreMinerals(void* data) {
 	const Data* pData = (const Data*)data;
-	return (int)pData->unitsFarmingMinerals.size() < pData->nWantedWorkersFarmingMinerals;
+	const int nWorkersOnMinerals = (int)pData->unitsFarmingMinerals.size();
+	const int nWorkersOnGas = (int)pData->unitsFarmingVespene.size();
+	const float ratio = (float)nWorkersOnMinerals / (float)(nWorkersOnGas + nWorkersOnMinerals);
+	// Dont farm minerals if there are more than 80% workers on minerals
+	return ratio < 0.8f;
 }
 
 bool BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES::WantMoreGas(void* data) {
     const Data* pData = (const Data*)data;
 	bool const hasRefinery = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Extractor) != nullptr;
-	return hasRefinery && (int)pData->unitsFarmingVespene.size() < pData->nWantedWorkersFarmingVespene;
+	bool const hasEnoughWorkersFarmingGas = pData->unitsFarmingVespene.size() >= pData->nMaxWantedWorkersFarmingGas;
+    return hasRefinery && !hasEnoughWorkersFarmingGas;
 }
 
 BT_NODE::State BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES::SendWorkersToCollectResources(void* data)

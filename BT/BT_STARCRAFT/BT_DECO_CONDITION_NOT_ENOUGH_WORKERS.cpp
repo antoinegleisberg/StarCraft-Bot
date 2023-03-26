@@ -19,5 +19,18 @@ bool BT_DECO_CONDITION_NOT_ENOUGH_WORKERS::IsThereNotEnoughWorkers(void *data)
     const BWAPI::UnitType workerType = BWAPI::Broodwar->self()->getRace().getWorker();
     const int workersOwned = Tools::CountUnitsOfType(workerType, BWAPI::Broodwar->self()->getUnits());
 
-    return workersOwned < pData->nWantedWorkersTotal;
+    const int maxSupply = BWAPI::Broodwar->self()->supplyTotal();
+	const int supplyUsed = BWAPI::Broodwar->self()->supplyUsed();
+
+    // Don't build workers if there is a too big proportion of them (we need defense/attack units)
+	const float currentProportionOfWorkersToMax = (float)workersOwned / (float)maxSupply;
+	const float currentProportionOfWorkersToUnits = (float)workersOwned / (float)supplyUsed;
+	bool tooManyWorkers = currentProportionOfWorkersToMax > 0.4f || currentProportionOfWorkersToUnits > 0.5f;
+
+	// Don't build workers if we have enough
+	const int maxWorkers = pData->nMaxWantedWorkersFarmingMinerals + pData->nMaxWantedWorkersFarmingGas;
+
+	const bool wantWorkers = !tooManyWorkers && workersOwned < maxWorkers;
+
+    return wantWorkers;
 }

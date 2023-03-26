@@ -30,13 +30,10 @@ BT_NODE::State BT_ACTION_MORPH_ZERGLINGS::MorphToZerglings(void* data)
 		const BWAPI::UnitType larva = BWAPI::UnitTypes::Zerg_Larva;
 		const BWAPI::Unit myDepot = Tools::GetUnitOfType(larva);
 		
-		
 		// if we have a valid depot unit and it's currently not training something, train a worker
 		// there is no reason for a bot to ever use the unit queueing system, it just wastes resources
 		if (myDepot && !myDepot->isMorphing()) {
 			myDepot->morph(BWAPI::UnitTypes::Zerg_Zergling);
-
-			
 			
 			BWAPI::Error error = BWAPI::Broodwar->getLastError();
 			if (error != BWAPI::Errors::None)

@@ -15,10 +15,8 @@ std::string BT_DECO_CONDITION_MORPH_ZERGLINGS::GetDescription()
 bool BT_DECO_CONDITION_MORPH_ZERGLINGS::DoWeMorphZerglings(void* data)
 {
     Data* pData = (Data*)data;
-
-    // Get the amount of supply supply we currently have unused
+    
     bool hasSpawnPool = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Spawning_Pool) > 0;
 
-    // If we have a sufficient amount of supply, we don't need to do anything
     return hasSpawnPool;
 }

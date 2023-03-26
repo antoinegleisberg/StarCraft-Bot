@@ -16,11 +16,8 @@ bool BT_DECO_CONDITION_MORPH_OVERLORDS::DoWeMorphOverlords(void* data)
 {
     Data* pData = (Data*)data;
 
-    // Get the amount of supply supply we currently have unused
-    //bool hasSpawnPool = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Spawning_Pool) > 0;
+    // If we do not have enough supply left, morph an overlord
+    bool needOverlords = (BWAPI::Broodwar->self()->supplyUsed() + 8 > BWAPI::Broodwar->self()->supplyTotal());
 
-	bool needOverlords = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Overlord) < 2 && Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Drone) > 6;
-
-    // If we have a sufficient amount of supply, we don't need to do anything
     return needOverlords;
 }

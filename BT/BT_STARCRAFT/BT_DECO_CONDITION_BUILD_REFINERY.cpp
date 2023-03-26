@@ -17,12 +17,10 @@ bool BT_DECO_CONDITION_BUILD_REFINERY::DoWeBuildRefinery(void* data)
     Data* pData = (Data*)data;
 
     // Get the amount of supply supply we currently have unused
-    bool haveMaxWorkers = BWAPI::Broodwar->self()->supplyUsed() >= 1;
-    bool hasHatchery = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Extractor) < 1;
     bool hasMinerals = BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Extractor.mineralPrice();
-    bool needRefinery = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Overlord) >= 2;
+    bool hasEnoughWorkers = Tools::GetUnitCount(BWAPI::UnitTypes::Zerg_Drone) >= 8;
 
     // If we have a sufficient amount of supply, we don't need to do anything
 
-    return haveMaxWorkers && hasHatchery && hasMinerals && needRefinery;
+    return hasMinerals && hasEnoughWorkers;
 }

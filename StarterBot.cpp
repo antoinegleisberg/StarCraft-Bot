@@ -2,6 +2,27 @@
 
 StarterBot::StarterBot()
 {
+    pData = new Data();
+    
+    // General info
+    pData->currMinerals = 0;
+    pData->thresholdMinerals = THRESHOLD1_MINERALS;
+    pData->currSupply = 0;
+    pData->thresholdSupply = THRESHOLD1_UNUSED_SUPPLY;
+    pData->nMorphingLarvaOverlords = 0;
+    pData->nZerglingBase = 0;
+
+    // Section for resource farming
+	pData->nMinWantedWorkersFarmingMinerals = NMIN_WANTED_WORKERS_FARMING_MINERALS;
+	pData->nMinWantedWorkersFarmingGas = NMIN_WANTED_WORKERS_FARMING_GAS;
+	pData->nMaxWantedWorkersFarmingMinerals = NMAX_WANTED_WORKERS_FARMING_MINERALS;
+	pData->nMaxWantedWorkersFarmingGas = NMAX_WANTED_WORKERS_FARMING_GAS;
+
+	// Section for 4-Pool attack
+    pData->startedPhase2 = false;
+    pData->additionalZerglingsTrained = 0;
+    pData->nDeadZerglings = 0;
+
     pBT = new BT_DECORATOR("EntryPoint", nullptr);
     
     // Root node
@@ -11,52 +32,62 @@ StarterBot::StarterBot()
 	BT_DECO_REPEATER* pSendWorkersToCollectResourcesRepeater = new BT_DECO_REPEATER("RepeatForeverSendWorkersToCollectResources", pParallelSeq, 0, true, false, false);
 	BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES* pSendWorkersToCollectResourcesAction = new BT_ACTION_SEND_IDLE_WORKERS_TO_COLLECT_RESOURCES("SendWorkersToCollectResources", pSendWorkersToCollectResourcesRepeater);
 
-    // Form the attack strategy
+    // Form the attack and base development strategy (everything that is not repetitive actions)
 	BT_PARALLEL_SEQUENCER* pParallelSeqAttackStrategy = new BT_PARALLEL_SEQUENCER("AttackStrategy", pParallelSeq, 15);
 
     // Phase 1: Make a 4-Pool attack
     BT_SEQUENCER* p4PoolAttackSeq = new BT_SEQUENCER("4PoolAttackSequence", pParallelSeqAttackStrategy, 15);
     
-    // Step 1: Make a spawn pool
+    // Phase 1 Step 1: Make a spawn pool
 	BT_DECO_UNTIL_SUCCESS* pBuildSpawnPoolUntilSuccess = new BT_DECO_UNTIL_SUCCESS("RepeatForeverBuildSpawnPool", p4PoolAttackSeq);
 	BT_ACTION_BUILD_SPAWN_POOL* pBuildSpawnPool = new BT_ACTION_BUILD_SPAWN_POOL("BuildSpawnPool", pBuildSpawnPoolUntilSuccess);
     
-    // Step 2: Build units
+    // Phase 1 Step 2: Build units
 	BT_DECO_UNTIL_SUCCESS* pBuild4PoolArmyDecorator = new BT_DECO_UNTIL_SUCCESS("4PoolArmyCreationDecorator", p4PoolAttackSeq);
 	BT_ACTION_BUILD_4POOL_ARMY* pBuild4PoolArmy = new BT_ACTION_BUILD_4POOL_ARMY("Build4PoolArmy", pBuild4PoolArmyDecorator);
 
-    /*
-    //Training Workers
-    BT_DECO_REPEATER* pTrainingWorkersForeverRepeater = new BT_DECO_REPEATER("RepeatForeverTrainingWorkers", pParallelSeq, 0, true, false, false);
+	// Phase 1 Step 3: Send the army to attack + send 2 additional zergling waves
+	BT_DECO_REPEATER* pLaunch4PoolAttackRepeater = new BT_DECO_REPEATER("RepeatForeverLaunch4PoolAttack", p4PoolAttackSeq, 0, true, false, false);
+	BT_ACTION_LAUNCH_4POOL_ATTACK* pLaunch4PoolAttack = new BT_ACTION_LAUNCH_4POOL_ATTACK("Launch4PoolAttack", pLaunch4PoolAttackRepeater);
+
+    // Phase 2 : Parallel sequencer to develop multiple aspects of the base
+	BT_DECO_REPEATER* pRepeatPhase2 = new BT_DECO_REPEATER("RepeatPhase2", pParallelSeqAttackStrategy, 0, true, false, false);
+    BT_DECO_CONDITION_STARTED_PHASE2* pConditionStartPhase2 = new BT_DECO_CONDITION_STARTED_PHASE2("ConditionStartPhase2", pRepeatPhase2);
+	BT_PARALLEL_SEQUENCER* pParallelAttackStrategy = new BT_PARALLEL_SEQUENCER("AttackStrategy", pConditionStartPhase2, 15);
+
+	// Phase 2 Thread 1: Train workers
+    BT_DECO_REPEATER* pTrainingWorkersForeverRepeater = new BT_DECO_REPEATER("RepeatForeverTrainingWorkers", pParallelAttackStrategy, 0, true, false, false);
     BT_DECO_CONDITION_NOT_ENOUGH_WORKERS* pNotEnoughWorkers = new BT_DECO_CONDITION_NOT_ENOUGH_WORKERS("NotEnoughWorkers", pTrainingWorkersForeverRepeater);
     BT_ACTION_TRAIN_WORKER* pTrainWorker = new BT_ACTION_TRAIN_WORKER("TrainWorker", pNotEnoughWorkers);
+   
 
-    // Build Hatchery
-    BT_DECO_UNTIL_SUCCESS* pBuildHatcheryUntilSuccess = new BT_DECO_UNTIL_SUCCESS("RepeatForeverBuildHatchery", pParallelSeq);
+    ///////////////////////////////////////
+    // A partir d'ici, c'est l'ancienne version donc on peut modifier
+    ///////////////////////////////////////
+    
+    // Phase 2 Thread 2 : Build Hatchery
+    BT_DECO_UNTIL_SUCCESS* pBuildHatcheryUntilSuccess = new BT_DECO_UNTIL_SUCCESS("RepeatForeverBuildHatchery", pParallelAttackStrategy);
     BT_DECO_CONDITION_BUILD_HATCHERY* pBuildHatcheryCondition = new BT_DECO_CONDITION_BUILD_HATCHERY("BuildHatchery", pBuildHatcheryUntilSuccess);
     BT_ACTION_BUILD_HATCHERY* pBuildHatchery = new BT_ACTION_BUILD_HATCHERY("BuildHatchery", pBuildHatcheryCondition);
 
-    // Build Refinery
-    BT_DECO_UNTIL_SUCCESS* pBuildRefineryUntilSuccess = new BT_DECO_UNTIL_SUCCESS("RepeatForeverBuildRefinery", pParallelSeq);
+    // Phase 2 Thread 3 : Build Refinery
+    BT_DECO_UNTIL_SUCCESS* pBuildRefineryUntilSuccess = new BT_DECO_UNTIL_SUCCESS("RepeatForeverBuildRefinery", pParallelAttackStrategy);
     BT_DECO_CONDITION_BUILD_REFINERY* pBuildRefineryCondition = new BT_DECO_CONDITION_BUILD_REFINERY("BuildRefinery", pBuildRefineryUntilSuccess);
     BT_ACTION_BUILD_REFINERY* pBuildRefinery = new BT_ACTION_BUILD_REFINERY("BuildRefinery", pBuildRefineryCondition);
 
-    // Morph To Overlords
-	BT_DECO_REPEATER* pMorphOverlordsForeverRepeater = new BT_DECO_REPEATER("RepeatForeverMorphOverlords", pParallelSeq, 0, true, false, false);
+    // Phase 2 Thread 4 : Morph To Overlords
+	BT_DECO_REPEATER* pMorphOverlordsForeverRepeater = new BT_DECO_REPEATER("RepeatForeverMorphOverlords", pParallelAttackStrategy, 0, true, false, false);
     BT_DECO_CONDITION_MORPH_OVERLORDS* pMorphOverlordsCondition = new BT_DECO_CONDITION_MORPH_OVERLORDS("MorphOverlords", pMorphOverlordsForeverRepeater);
 	BT_ACTION_MORPH_OVERLORDS* pMorphOverlords = new BT_ACTION_MORPH_OVERLORDS("MorphOverlords", pMorphOverlordsCondition);
 
-    // Morph To Zerglings
-    BT_DECO_REPEATER* pMorphZerglingsForeverRepeater = new BT_DECO_REPEATER("RepeatForeverMorphZerglings", pParallelSeq, 0, true, false, false);
+    // Phase 2 Thread 5 : Morph To Zerglings
+    BT_DECO_REPEATER* pMorphZerglingsForeverRepeater = new BT_DECO_REPEATER("RepeatForeverMorphZerglings", pParallelAttackStrategy, 0, true, false, false);
     BT_DECO_CONDITION_MORPH_ZERGLINGS* pMorphZerglingsCondition = new BT_DECO_CONDITION_MORPH_ZERGLINGS("MorphZerglings", pMorphZerglingsForeverRepeater);
     BT_ACTION_MORPH_ZERGLINGS* pMorphZerglings = new BT_ACTION_MORPH_ZERGLINGS("MorphZerglings", pMorphZerglingsCondition);
     
-    
-    
-    // Destroy Base
-    //BT_DECO_REPEATER* pSendOneZerglingToAttackForeverRepeater = new BT_DECO_REPEATER("RepeatForeverDestroyBase", pParallelSeq, 0, true, false, false);
-    //BT_DECO_CONDITION_DESTROY_BASE* pDestroyBaseCondition = new BT_DECO_CONDITION_DESTROY_BASE("DestroyBase", pDestroyBaseForeverRepeater);
-    //BT_ACTION_DESTROY_BASE* pDestroyBase = new BT_ACTION_DESTROY_BASE("SendZergling", pDestroyBaseCondition);
+
+    // OLD ATTACK CODE
+    /*
     
     BT_DECO_REPEATER* pAttackProcedure = new BT_DECO_REPEATER("RepeatForeverTryingToAttack", pParallelSeq, 0, true, false, false);
     //If the preparations are done (enough Zergling and base built , then attack
@@ -74,9 +105,6 @@ StarterBot::StarterBot()
     BT_DECO_REPEATER* pSendOneZerglingToAttackForeverRepeater = new BT_DECO_REPEATER("RepeatForeverSendOneZerglingToAttack", pParallelSeq, 0, true, false, false);
     BT_DECO_CONDITION_SEND_ZERGLING* pSendZerglingCondition = new BT_DECO_CONDITION_SEND_ZERGLING("SendZergling", pSendOneZerglingToAttackForeverRepeater);
     BT_ACTION_SEND_ONE_ZERGLING_TO_ATTACK* pSendZergling = new BT_ACTION_SEND_ONE_ZERGLING_TO_ATTACK("SendZergling", pSendZerglingCondition);
-    //////////
-
-    
 
     
     //Eliminer les ennemis sur le front
@@ -87,23 +115,8 @@ StarterBot::StarterBot()
     BT_DECO_REPEATER* pDestroyBaseBuildings = new BT_DECO_REPEATER("DestroyBase", pAttackTasks, 0, true, false, false); // Jusqu'à la fin de l'attaque
     BT_DECO_CONDITION_ENNEMY_ABSENCE* pEnnemyAbsenceCondition = new BT_DECO_CONDITION_ENNEMY_ABSENCE("CheckEnnemyAbsence", pDestroyBaseBuildings); // Si la base ennemie n'est pas défendu
     BT_ACTION_ATTACK_NEAREST_BUILDING* pDestroy = new BT_ACTION_ATTACK_NEAREST_BUILDING("Destroy", pEnnemyAbsenceCondition); // Alors on détruit la base 
-
-
-
+    
     */
-    
-    
-    pData = new Data();
-    pData->currMinerals = 0;
-    pData->thresholdMinerals = THRESHOLD1_MINERALS;
-    pData->currSupply = 0;
-    pData->thresholdSupply = THRESHOLD1_UNUSED_SUPPLY;
-    pData->nMorphingLarvaOverlords = 0;
-	pData->nZerglingBase = 0;
-
-    pData->nWantedWorkersTotal = NWANTED_WORKERS_TOTAL;
-    pData->nWantedWorkersFarmingMinerals = NWANTED_WORKERS_FARMING_MINERALS;
-	pData->nWantedWorkersFarmingVespene = NWANTED_WORKERS_FARMING_VESPENE;
 }
 
 // Called when the bot starts!
@@ -266,6 +279,7 @@ void StarterBot::onSendText(std::string text)
 // Called whenever a unit is destroyed, with a pointer to the unit
 void StarterBot::onUnitDestroy(BWAPI::Unit unit)
 {
+	if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) pData->nDeadZerglings++;
     //if the unit is farming then remove it from data structure
     if (pData->unitsFarmingMinerals.contains(unit)) pData->unitsFarmingMinerals.erase(unit);
 	if (pData->unitsFarmingVespene.contains(unit)) pData->unitsFarmingVespene.erase(unit);
@@ -315,11 +329,10 @@ void StarterBot::onUnitHide(BWAPI::Unit unit)
 	
 }
 
-// Called whenever a unit switches player control
-// This usually happens when a dark archon takes control of a unit
 void StarterBot::onUnitRenegade(BWAPI::Unit unit)
-{ 
-	
+{
+
 }
 
-# pragma endregion
+// Called whenever a unit switches player control
+// This usually h
